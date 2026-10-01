@@ -112,6 +112,10 @@ func TestToolsFlow(t *testing.T) {
 	if isErr || !strings.HasPrefix(text, "postgres-rls-orm-bypass · bug · auth\n") {
 		t.Errorf("search:\n%s", text)
 	}
+	// Hits carry body text, not just the summary line.
+	if !strings.Contains(text, "ALTER TABLE invoices FORCE ROW LEVEL SECURITY;") {
+		t.Errorf("search hit missing body excerpt:\n%s", text)
+	}
 
 	text, _ = s.tool("mem_get", map[string]any{"name": "tenant-isolation"})
 	for _, want := range []string{
@@ -120,6 +124,8 @@ func TestToolsFlow(t *testing.T) {
 		"Billing job wrote 1.2k invoice rows",
 		"replaces →  shared-schema-rollout  (not written yet)",
 		"mentions →, ← blocks  postgres-rls-orm-bypass",
+		// Direct neighbors carry an excerpt of their body.
+		"The nightly billing job bulk-inserted invoices without setting",
 	} {
 		if !strings.Contains(text, want) {
 			t.Errorf("get missing %q:\n%s", want, text)

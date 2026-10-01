@@ -6,3 +6,5 @@ bin/
 
 # OS / editor
 .DS_Store
+
+bench

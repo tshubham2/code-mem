@@ -126,6 +126,8 @@ func (s *Server) instructions() string {
 
 Before answering a question about why something is the way it is, a past incident, or how things are done here, check the index; if a cluster looks relevant, mem_search it or mem_get a listed slug. mem_get returns the memory plus what it links to (what caused it, what it replaced), so one call usually answers the "why".
 
+Summaries and excerpts are partial. Before stating a specific detail (a number, date, name, format or step) that you have not seen in full text, mem_get that memory.
+
 When you learn something durable (a decision and its reason, a bug's root cause, a non-obvious constraint, a stated preference), save it with mem_save. Link it to related memories with rel and [[slug]] references. Do not save what the code or git history already records.
 
 ` + render.Boot(s.Set)

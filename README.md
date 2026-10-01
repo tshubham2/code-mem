@@ -151,8 +151,8 @@ save. Outside git, create it yourself with `mkdir .mem`.
 
 | Tool | Description |
 |------|-------------|
-| `mem_search` | Keyword search across memory names, summaries and bodies. Each hit includes its linked memories. Optional `type` and `cluster` filters. |
-| `mem_get` | A memory's full text, plus the summaries of memories linked to it, up to `hops` away (default 1, max 2). |
+| `mem_search` | Keyword search across memory names, summaries and bodies. Each hit includes an excerpt of its text and its linked memories. Optional `type` and `cluster` filters. |
+| `mem_get` | A memory's full text, plus memories linked to it: summary and excerpt for direct links, summaries further out (`hops`, default 1, max 2). |
 | `mem_save` | Create or update a memory. Validates the format and reports new clusters, links to memories that don't exist yet, and likely duplicates. |
 | `mem_rename` | Rename a memory and rewrite every link that points to it. |
 | `mem_check` | Report invalid files, malformed links, shadowed memories and links to memories not yet written. |
@@ -173,9 +173,16 @@ neighbors:
   replaces →  shared-schema-rollout  (not written yet)
   caused_by →  staging-tenant-leak-2026-03
       Billing job wrote 1.2k invoice rows to the wrong tenant in staging, 2026-03
+      The nightly billing job bulk-inserted invoices without setting `app.tenant_id`.
+      Because the job ran as the table owner, RLS did not filter the read …
   mentions →, ← blocks  postgres-rls-orm-bypass
       Postgres RLS policies do not apply to the table owner unless FORCE is set
+      `CREATE POLICY` alone is not enough. The owning role bypasses all policies …
 ```
+
+The target memory comes back in full. Each directly linked memory comes
+with its summary and an excerpt of its text, so the agent gets the cause
+and the history in one call.
 
 ## Memory format
 

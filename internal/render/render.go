@@ -13,7 +13,39 @@ const (
 	searchEdges = 4  // neighbors listed under each search hit
 	maxNodes    = 25 // neighbors listed by Get, across all hops
 	MaxHops     = 2
+
+	// Excerpt budgets, in bytes of body text. A summary alone is not enough
+	// to answer from: agents given only summaries stopped early and left out
+	// the dates, numbers and formats that live in the body.
+	searchExcerpt   = 500
+	neighborExcerpt = 400
 )
+
+// excerpt flattens body to a single line and cuts it at about n bytes on a
+// word boundary. The marker tells the agent the note continues.
+func excerpt(body string, n int) string {
+	flat := strings.Join(strings.Fields(body), " ")
+	if len(flat) <= n {
+		return flat
+	}
+	cut := strings.LastIndexByte(flat[:n], ' ')
+	if cut < n/2 {
+		cut = n
+	}
+	return flat[:cut] + " …(truncated; mem_get for the full note)"
+}
+
+// bodyExcerpt reads a memory's body for display, or "" if it cannot.
+func bodyExcerpt(set *store.Set, r store.Ref, n int) string {
+	if r.Store == nil {
+		return ""
+	}
+	body, err := set.ReadBody(r)
+	if err != nil || body == "" {
+		return ""
+	}
+	return excerpt(body, n)
+}
 
 // header renders "slug · type · cluster", tagging memories from the
 // global store so the agent knows they are not repo-specific.
@@ -37,6 +69,9 @@ func Search(set *store.Set, query string, hits []store.Hit) string {
 		}
 		b.WriteString(header(h.Ref) + "\n")
 		b.WriteString("  " + h.Summary + "\n")
+		if ex := bodyExcerpt(set, h.Ref, searchExcerpt); ex != "" {
+			b.WriteString("  " + ex + "\n")
+		}
 		ns := set.Neighbors(h.Slug)
 		var parts []string
 		for _, n := range ns {
@@ -57,8 +92,8 @@ func Search(set *store.Set, query string, hits []store.Hit) string {
 	return b.String()
 }
 
-// Get renders the full body of slug and the summaries of everything within
-// hops edges of it.
+// Get renders the full body of slug, an excerpt of each direct neighbor's
+// body, and the summaries of anything further out.
 func Get(set *store.Set, slug string, hops int) (string, error) {
 	r := set.Ref(slug)
 	if r.Store == nil {
@@ -108,6 +143,11 @@ func Get(set *store.Set, slug string, hops int) (string, error) {
 			nb.WriteString(line + "\n")
 			if n.Summary != "" {
 				nb.WriteString(indent + "    " + n.Summary + "\n")
+			}
+			if depth == 1 {
+				if ex := bodyExcerpt(set, n.Ref, neighborExcerpt); ex != "" {
+					nb.WriteString(indent + "    " + ex + "\n")
+				}
 			}
 			if depth < hops && n.Store != nil {
 				if !walk(n.Slug, depth+1, indent+"    ") {

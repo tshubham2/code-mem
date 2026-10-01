@@ -22,6 +22,16 @@ This is the fix for the main failure mode of every existing memory MCP:
 the agent never queries it, because nothing in context suggests there is
 anything to find. Clusters make existence visible for ~80 tokens.
 
+> **Revised after benchmarking (2026-10).** The first version below sent
+> summaries only. In end-to-end tests agents answered from those summaries
+> and left out details that live in the body (dates, numbers, formats).
+> Search hits now carry a ~500-byte body excerpt and direct neighbors in
+> `mem_get` a ~400-byte excerpt, cut on a word boundary and marked
+> `…(truncated; mem_get for the full note)`. The server instructions also
+> tell the agent that summaries are partial. In end-to-end tests at 1,059
+> memories this raised answer accuracy from 88% to 98% and cut tool calls
+> per answer from 2.9 to 1.9.
+
 ## `mem_search("tenant isolation")`
 
     tenant-isolation · decision · auth

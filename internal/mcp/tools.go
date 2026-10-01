@@ -31,7 +31,7 @@ func (s *Server) tools() []map[string]any {
 	return []map[string]any{
 		{
 			"name":        "mem_search",
-			"description": "Keyword (BM25) search over memory summaries and bodies. Each hit shows its summary and the memories it links to. Use exact technical terms; follow up with mem_get on a slug.",
+			"description": "Keyword (BM25) search over memory summaries and bodies. Each hit shows its summary, an excerpt of its body, and the memories it links to. Use exact technical terms. Excerpts can be cut short: mem_get a hit before relying on details it doesn't show.",
 			"inputSchema": obj(map[string]any{
 				"query":   str("Keywords, e.g. \"RLS tenant owner\""),
 				"type":    map[string]any{"type": "string", "enum": memory.Types, "description": "Only memories of this type"},
@@ -41,7 +41,7 @@ func (s *Server) tools() []map[string]any {
 		},
 		{
 			"name":        "mem_get",
-			"description": "Read one memory in full, plus the summaries of linked memories (what caused it, what it replaced, what references it). One call usually gives the decision and its history.",
+			"description": "Read one memory in full, plus linked memories (what caused it, what it replaced, what references it) with their summaries and body excerpts. One call usually gives the decision and its history.",
 			"inputSchema": obj(map[string]any{
 				"name": str("Memory slug, e.g. tenant-isolation"),
 				"hops": map[string]any{"type": "integer", "minimum": 0, "maximum": render.MaxHops, "description": "Graph distance to include (default 1)"},
