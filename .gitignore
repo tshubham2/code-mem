@@ -1,0 +1,8 @@
+# build output
+bin/
+
+# local memory store (the project's own notes are not published)
+.mem/
+
+# OS / editor
+.DS_Store
