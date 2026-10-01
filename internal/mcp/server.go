@@ -13,8 +13,9 @@ import (
 	"github.com/tshubham2/code-mem/internal/store"
 )
 
-// Version is reported to clients in serverInfo.
-var Version = "0.1.0"
+// Version is reported to clients in serverInfo. Release builds set it with
+// -ldflags "-X github.com/tshubham2/code-mem/internal/mcp.Version=...".
+var Version = "dev"
 
 const fallbackProtocol = "2025-06-18"
 

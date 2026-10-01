@@ -24,6 +24,7 @@ commands:
   check                     report invalid files and dangling links
   rename <from> <to>        rename a memory and rewrite links to it
   index                     force a rebuild of every index
+  version                   print the version
 
 flags:
   -dir <path>       repo store (default: nearest .mem/, else <git root>/.mem)
@@ -53,6 +54,10 @@ func run(args []string) error {
 		return fmt.Errorf("missing command")
 	}
 	cmd, rest := fs.Arg(0), fs.Args()[1:]
+	if cmd == "version" {
+		fmt.Println("code-mem", mcp.Version)
+		return nil
+	}
 
 	set, err := store.Open(cfg)
 	if err != nil {

@@ -3,6 +3,7 @@ package store
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -63,7 +64,8 @@ func TestDiscoveryCreatesNothingUntilSave(t *testing.T) {
 			t.Errorf("missing %s", p)
 		}
 	}
-	if fi, _ := os.Stat(filepath.Join(repo, "memories/a.md")); fi.Mode().Perm() != 0o644 {
+	// Unix permissions only; Windows has no group/other bits.
+	if fi, _ := os.Stat(filepath.Join(repo, "memories/a.md")); runtime.GOOS != "windows" && fi.Mode().Perm() != 0o644 {
 		t.Errorf("mode %v", fi.Mode().Perm())
 	}
 }

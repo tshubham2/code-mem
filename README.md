@@ -47,21 +47,33 @@ agent  › (sees an "auth" cluster in its memory index, calls mem_get)
 
 ## Installation
 
-Requires [Go](https://go.dev/dl/) 1.22 or newer.
+code-mem is a single binary with no dependencies. Pick one:
+
+**macOS / Linux: install script**
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/tshubham2/code-mem/main/install.sh | sh
+```
+
+Downloads the latest release for your OS and CPU, verifies its checksum,
+and installs to `~/.local/bin` (no sudo). Set `CODE_MEM_INSTALL_DIR` to
+change the location, or `CODE_MEM_VERSION=v0.2.0` to pin a version.
+
+**Windows, or manual download**
+
+Download the archive for your platform from the
+[latest release](https://github.com/tshubham2/code-mem/releases/latest),
+extract it, and put `code-mem` (`code-mem.exe` on Windows) somewhere on
+your `PATH`. Builds are available for macOS, Linux and Windows on amd64
+and arm64.
+
+**With Go (1.22+)**
 
 ```sh
 go install github.com/tshubham2/code-mem/cmd/code-mem@latest
 ```
 
-The binary is installed to `$(go env GOPATH)/bin`, usually `~/go/bin`.
-
-To build from source instead:
-
-```sh
-git clone https://github.com/tshubham2/code-mem.git
-cd code-mem
-go build -o bin/code-mem ./cmd/code-mem
-```
+Check the install with `code-mem version`.
 
 ## Quick start
 
@@ -82,7 +94,7 @@ configuration like this:
 ```
 
 Use the absolute path to the binary (for example
-`/Users/you/go/bin/code-mem`). The client should start the server in your
+`/Users/you/.local/bin/code-mem`; `which code-mem` prints it). The client should start the server in your
 project directory, which is the default for most coding agents.
 
 ### 2. Add agent instructions (recommended)
@@ -298,6 +310,18 @@ internal/index/     binary index: build, memory-mapped reader, BM25
 internal/store/     store discovery, freshness, repo + global merge
 internal/render/    plain-text response formatting
 internal/mcp/       MCP server and tool handlers
+```
+
+### Releasing
+
+Push a version tag; the release workflow builds every platform with
+[GoReleaser](https://goreleaser.com), publishes the archives and
+checksums. (Homebrew publishing is configured but stays off until a
+`HOMEBREW_TAP_GITHUB_TOKEN` secret is added.)
+
+```sh
+git tag v0.2.0 && git push origin v0.2.0
+goreleaser release --snapshot --clean   # dry run locally first
 ```
 
 ## Contributing

@@ -1,0 +1,81 @@
+# Release config: `git tag vX.Y.Z && git push --tags` runs this through
+# .github/workflows/release.yml. Test locally with:
+#   goreleaser release --snapshot --clean
+version: 2
+
+project_name: code-mem
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./...
+
+builds:
+  - main: ./cmd/code-mem
+    binary: code-mem
+    env:
+      - CGO_ENABLED=0
+    goos: [darwin, linux, windows]
+    goarch: [amd64, arm64]
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X github.com/tshubham2/code-mem/internal/mcp.Version={{ .Version }}
+
+archives:
+  # No version in the name, so .../releases/latest/download/<name> is a
+  # stable URL for install.sh and the README.
+  - name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+
+# Homebrew: publishes a cask to github.com/tshubham2/homebrew-tap.
+# Skipped automatically unless the HOMEBREW_TAP_GITHUB_TOKEN secret is set.
+homebrew_casks:
+  - name: code-mem
+    repository:
+      owner: tshubham2
+      name: homebrew-tap
+      token: '{{ envOrDefault "HOMEBREW_TAP_GITHUB_TOKEN" "" }}'
+    # The workflow passes an empty string when the secret is missing.
+    skip_upload: '{{ if envOrDefault "HOMEBREW_TAP_GITHUB_TOKEN" "" }}false{{ else }}true{{ end }}'
+    homepage: https://github.com/tshubham2/code-mem
+    description: Persistent, linked memory for AI coding agents, stored as markdown in your repo
+    license: MIT
+    hooks:
+      post:
+        # The binaries are not notarized; clear the quarantine flag so
+        # macOS lets them run after a Homebrew install.
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/code-mem"]
+          end
+
+release:
+  github:
+    owner: tshubham2
+    name: code-mem
+  footer: |
+    ## Install
+
+    ```sh
+    curl -fsSL https://raw.githubusercontent.com/tshubham2/code-mem/main/install.sh | sh
+    ```
+
+    Or download the archive for your platform below.
